@@ -18,6 +18,14 @@ contract TokenSwap {
         bool active;
     }
 
+
+//to restrict contract to only use guz and w3b, I have deployed the contracts, so give their addresses
+//     address public constant GUZ_TOKEN = 0x...; 
+// address public constant W3B_TOKEN = 0x...; 
+
+
+
+
     uint256 public orderCount;
     mapping(uint256 => Order) public orders;
 
@@ -42,8 +50,14 @@ contract TokenSwap {
         require(_amountIn > 0, "Amount in must be greater than zero");
         require(_amountOut > 0, "Amount out must be greater than zero");
 
-        // Transfer tokens from the order creator to this contract
         IERC20(_tokenIn).transferFrom(msg.sender, address(this), _amountIn);
+
+//restrict contract to only use these two
+// require(
+//     (_tokenIn == GUZ_TOKEN && _tokenOut == W3B_TOKEN) || 
+//     (_tokenIn == W3B_TOKEN && _tokenOut == GUZ_TOKEN),
+//     "Only GUZ and W3B tokens are allowed"
+// );
 
         orders[orderCount] = Order({
             creator: msg.sender,
