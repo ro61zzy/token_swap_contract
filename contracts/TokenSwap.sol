@@ -9,7 +9,6 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 // cancel order if it has not been fulfilled
 
 contract TokenSwap {
-    
     struct Order {
         address creator;
         address tokenIn;
@@ -22,18 +21,22 @@ contract TokenSwap {
     uint256 public orderCount;
     mapping(uint256 => Order) public orders;
 
-   
-    event OrderCreated(uint256 orderId, address indexed creator, address tokenIn, uint256 amountIn, address tokenOut, uint256 amountOut);
-  event OrderFulfilled(uint256 orderId, address indexed fulfiller);
-
-
+    event OrderCreated(
+        uint256 orderId,
+        address indexed creator,
+        address tokenIn,
+        uint256 amountIn,
+        address tokenOut,
+        uint256 amountOut
+    );
+    event OrderFulfilled(uint256 orderId, address indexed fulfiller);
     event OrderCancelled(uint256 orderId);
 
 
     function createOrder(
-        address _tokenIn, 
-        uint256 _amountIn, 
-        address _tokenOut, 
+        address _tokenIn,
+        uint256 _amountIn,
+        address _tokenOut,
         uint256 _amountOut
     ) external {
         require(_amountIn > 0, "Amount in must be greater than zero");
@@ -41,7 +44,7 @@ contract TokenSwap {
 
         // Transfer tokens from the order creator to this contract
         IERC20(_tokenIn).transferFrom(msg.sender, address(this), _amountIn);
-        
+
         orders[orderCount] = Order({
             creator: msg.sender,
             tokenIn: _tokenIn,
@@ -51,19 +54,27 @@ contract TokenSwap {
             active: true
         });
 
-        emit OrderCreated(orderCount, msg.sender, _tokenIn, _amountIn, _tokenOut, _amountOut);
+        emit OrderCreated(
+            orderCount,
+            msg.sender,
+            _tokenIn,
+            _amountIn,
+            _tokenOut,
+            _amountOut
+        );
 
         orderCount++;
     }
-
-
 
     function fulfillOrder(uint256 _orderId) external {
         Order memory order = orders[_orderId];
         require(order.active, "Order is not active");
 
-   
-        IERC20(order.tokenOut).transferFrom(msg.sender, order.creator, order.amountOut);
+        IERC20(order.tokenOut).transferFrom(
+            msg.sender,
+            order.creator,
+            order.amountOut
+        );
 
         IERC20(order.tokenIn).transfer(msg.sender, order.amountIn);
 
@@ -71,5 +82,34 @@ contract TokenSwap {
 
         emit OrderFulfilled(_orderId, msg.sender);
     }
- 
+
+    // Cancel an order and reclaim the deposited tokens
+    function cancelOrder(uint256 _orderId) external {
+        Order memory order = orders[_orderId];
+        require(
+            msg.sender == order.creator,
+            "Only creator can cancel the order"
+        );
+        require(order.active, "Order is not active");
+
+        // Transfer the deposited tokens back to the order creator
+        IERC20(order.tokenIn).transfer(order.creator, order.amountIn);
+
+        orders[_orderId].active = false;
+
+        emit OrderCancelled(_orderId);
+    }
+
+       function getOrder(uint256 _orderId) external view returns (
+        address creator,
+        address tokenIn,
+        uint256 amountIn,
+        address tokenOut,
+        uint256 amountOut,
+        bool active
+    ) {
+        Order memory order = orders[_orderId];
+        return (order.creator, order.tokenIn, order.amountIn, order.tokenOut, order.amountOut, order.active);
+    }
+
 }
