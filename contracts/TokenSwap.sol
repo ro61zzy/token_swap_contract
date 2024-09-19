@@ -97,7 +97,7 @@ contract TokenSwap {
         emit OrderFulfilled(_orderId, msg.sender);
     }
 
-    // Cancel an order and reclaim the deposited tokens
+
     function cancelOrder(uint256 _orderId) external {
         Order memory order = orders[_orderId];
         require(
@@ -106,7 +106,7 @@ contract TokenSwap {
         );
         require(order.active, "Order is not active");
 
-        // Transfer the deposited tokens back to the order creator
+       
         IERC20(order.tokenIn).transfer(order.creator, order.amountIn);
 
         orders[_orderId].active = false;
