@@ -24,7 +24,7 @@ contract TokenSwap {
 
    
     event OrderCreated(uint256 orderId, address indexed creator, address tokenIn, uint256 amountIn, address tokenOut, uint256 amountOut);
-
+  event OrderFulfilled(uint256 orderId, address indexed fulfiller);
 
 
     event OrderCancelled(uint256 orderId);
@@ -56,5 +56,20 @@ contract TokenSwap {
         orderCount++;
     }
 
+
+
+    function fulfillOrder(uint256 _orderId) external {
+        Order memory order = orders[_orderId];
+        require(order.active, "Order is not active");
+
+   
+        IERC20(order.tokenOut).transferFrom(msg.sender, order.creator, order.amountOut);
+
+        IERC20(order.tokenIn).transfer(msg.sender, order.amountIn);
+
+        orders[_orderId].active = false;
+
+        emit OrderFulfilled(_orderId, msg.sender);
+    }
  
 }
