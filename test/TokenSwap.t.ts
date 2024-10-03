@@ -1,5 +1,5 @@
 import { expect } from "chai";
-import { ethers } from "hardhat";
+import { ethers } from "hardhat"; 
 import { Signer } from "ethers";
 
 describe("TokenSwap Contract with GUZ and W3B", function () {
@@ -116,9 +116,9 @@ describe("TokenSwap Contract with GUZ and W3B", function () {
 
       await tokenSwap.connect(addr2).fulfillOrder(0);
 
-      await expect(tokenSwap.connect(addr2).fulfillOrder(0)).to.be.revertedWith(
+      await expect(tokenSwap.connect(addr2).fulfillOrder(0)).to.be.rejectedWith(
         "Order is not active"
-      );
+      );      
     });
   });
 
@@ -166,7 +166,7 @@ describe("TokenSwap Contract with GUZ and W3B", function () {
           ethers.utils.parseEther("20")
         );
 
-      await expect(tokenSwap.connect(addr2).cancelOrder(0)).to.be.revertedWith(
+      await expect(tokenSwap.connect(addr2).cancelOrder(0)).to.be.rejectedWith(
         "Only creator can cancel the order"
       );
     });
